@@ -160,6 +160,11 @@ void render()
     gCurrentScene->render();
 
     EndMode2D();
+
+    if (gCurrentScene != gMenu){
+        DrawText(TextFormat("Lives: %i", gLives), 100, 80, 20, RED);
+    }
+    
     EndDrawing();
 }
 
