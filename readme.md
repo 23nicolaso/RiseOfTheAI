@@ -1,5 +1,6 @@
 A Platformer I made for CS3113: Games Programming Class!
 All art is made by me! 
+Coded in C# with the Raylib library.  
 
 Credits:
 Music: 
