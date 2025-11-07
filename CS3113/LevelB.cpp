@@ -64,7 +64,7 @@ void LevelB::initialise()
   
    mEnemyEntity = new Entity(
       {mGameState.map->getLeftBoundary()+875, mOrigin.y},
-      {70.0f, 70.0f},
+      {50.0f, 50.0f},
       "assets/game/wanderer.png",
       NPC
    );
