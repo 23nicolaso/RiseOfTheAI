@@ -58,6 +58,26 @@ void LevelC::initialise()
    mGameState.soldier->setAcceleration({0.0f, ACCELERATION_OF_GRAVITY});
    mGameState.soldier->setFrameSpeed(4);
 
+   
+   /*
+      ----------- ENEMY AI ----------
+   */
+  
+   mEnemyEntity = new Entity(
+      {mGameState.map->getLeftBoundary()+700, mOrigin.y},
+      {70.0f, 70.0f},
+      "assets/game/drone.png",
+      NPC
+   );
+
+   mEnemyEntity->setAIType(FLYER);
+   mEnemyEntity->setAIState(WALKING);
+   mEnemyEntity->setSpeed(50);
+   mEnemyEntity->setColliderDimensions({
+      mEnemyEntity->getScale().x,
+      mEnemyEntity->getScale().y
+   });
+
    /*
       ----------- CAMERA -----------
    */
@@ -76,8 +96,16 @@ void LevelC::update(float deltaTime)
       deltaTime,      // delta time / fixed timestep
       nullptr,        // player
       mGameState.map, // map
-      nullptr,        // collidable entities
-      0               // col. entity count
+      mEnemyEntity,   // collidable entities
+      1               // col. entity count
+   );
+
+   mEnemyEntity -> update(
+      deltaTime,           // delta time / fixed timestep
+      mGameState.soldier,  // player
+      mGameState.map,      // map
+      nullptr,             // collidable entities
+      0                    // col. entity count
    );
 
    if (mGameState.soldier->getClearStatus() == true) mGameState.nextSceneID = 3;
@@ -90,14 +118,16 @@ void LevelC::update(float deltaTime)
 void LevelC::render()
 {
    ClearBackground(BLACK);
-   mGameState.soldier->render();
-   mGameState.map->render();
+   mGameState.soldier   -> render();
+   mGameState.map       -> render();
+   mEnemyEntity         -> render();
 }
 
 void LevelC::shutdown()
 {
    delete mGameState.soldier;
    delete mGameState.map;
+   delete mEnemyEntity;
 
    UnloadMusicStream(mGameState.bgm);
    UnloadSound(mGameState.deathSound);

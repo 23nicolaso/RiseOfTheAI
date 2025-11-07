@@ -6,7 +6,7 @@
 enum Direction    { LEFT, UP, RIGHT, DOWN              }; // For walking
 enum EntityStatus { ACTIVE, INACTIVE                   };
 enum EntityType   { PLAYER, BLOCK, PLATFORM, NPC, NONE };
-enum AIType       { WANDERER, FOLLOWER                 };
+enum AIType       { WANDERER, FOLLOWER, FLYER          };
 enum AIState      { WALKING, IDLE, FOLLOWING           };
 
 class Entity
@@ -69,6 +69,7 @@ private:
     void animate(float deltaTime);
     void AIActivate(Entity *target);
     void AIWander();
+    void AIFlyWander();
     void AIFollow(Entity *target);
 
 public:

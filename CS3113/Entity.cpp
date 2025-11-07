@@ -40,6 +40,11 @@ void Entity::checkCollisionY(Entity *collidableEntities, int collisionCheckCount
         
         if (isColliding(collidableEntity))
         {
+            if (collidableEntity->getAIType() != FOLLOWER){
+                // KILL PLAYER BY THROWING OUT OF MAP   
+                mPosition.y=1000;
+            }
+
             // STEP 2: Calculate the distance between its centre and our centre
             //         and use that to calculate the amount of overlap between
             //         both bodies.
@@ -75,6 +80,9 @@ void Entity::checkCollisionX(Entity *collidableEntities, int collisionCheckCount
         
         if (isColliding(collidableEntity))
         {            
+            // KILL PLAYER BY THROWING OUT OF MAP
+            mPosition.y=1000;
+
             // When standing on a platform, we're always slightly overlapping
             // it vertically due to gravity, which causes false horizontal
             // collision detections. So the solution I dound is only resolve X
@@ -95,6 +103,7 @@ void Entity::checkCollisionX(Entity *collidableEntities, int collisionCheckCount
 
                 // Collision!
                 mIsCollidingRight = true;
+
             } else if (mVelocity.x < 0) {
                 mPosition.x    += xOverlap;
                 mVelocity.x     = 0;
@@ -119,6 +128,11 @@ void Entity::checkCollisionY(Map *map)
     // COLLISION ABOVE (jumping upward)
     if (map->isSolidTileAt(topCentreProbe, &xOverlap, &yOverlap) && mVelocity.y < 0.0f)
     {
+        // SWAP DIRECTIONS IF TYPE IS FLYER
+        if (mEntityType == NPC && mAIType == FLYER){
+            mDirection = DOWN;
+        }
+
         if (map->getTileAt(topCentreProbe) != 3){
             // 3 is a platform, should be allowed to jump from below to above.
             mPosition.y += yOverlap;   // push down
@@ -129,7 +143,12 @@ void Entity::checkCollisionY(Map *map)
 
     // COLLISION BELOW (falling downward)
     if (map->isSolidTileAt(bottomCentreProbe, &xOverlap, &yOverlap) && mVelocity.y > 0.0f)
-    {
+    {   
+        // SWAP DIRECTIONS IF TYPE IS FLYER
+        if (mEntityType == NPC && mAIType == FLYER){
+            mDirection = UP;
+        }
+
         if (map->getTileAt(bottomCentreProbe) == 4){
             // Go to next stage tile! 
             mIsStageCleared = true;
@@ -154,6 +173,11 @@ void Entity::checkCollisionX(Map *map)
     if (map->isSolidTileAt(rightCentreProbe, &xOverlap, &yOverlap) 
          && mVelocity.x > 0.0f && yOverlap >= 0.5f)
     {
+        // SWAP DIRECTIONS IF TYPE IS WANDERER
+        if (mEntityType == NPC && mAIType == WANDERER){
+            mDirection = LEFT;
+        }
+
         if (map->getTileAt(rightCentreProbe) != 3){
             // 3 is a platform, should be allowed to go through.
             mPosition.x -= xOverlap * 1.01f;   // push left
@@ -166,6 +190,11 @@ void Entity::checkCollisionX(Map *map)
     if (map->isSolidTileAt(leftCentreProbe, &xOverlap, &yOverlap) 
          && mVelocity.x < 0.0f && yOverlap >= 0.5f)
     {
+        // SWAP DIRECTIONS IF TYPE IS WANDERER
+        if (mEntityType == NPC && mAIType == WANDERER){
+            mDirection = RIGHT;
+        }
+
         if (map->getTileAt(leftCentreProbe) != 3){
             mPosition.x += xOverlap * 1.01;   // push right
             mVelocity.x  = 0.0f;
@@ -204,7 +233,25 @@ void Entity::animate(float deltaTime)
     }
 }
 
-void Entity::AIWander() { moveLeft(); }
+void Entity::AIWander() { 
+    if (mDirection == LEFT){
+        moveLeft();
+    }
+    else{
+        moveRight();
+    }
+}
+
+
+void Entity::AIFlyWander() { 
+    if (mDirection == UP){
+        moveUp();
+    }
+    else{
+        moveDown();
+    }
+}
+
 
 void Entity::AIFollow(Entity *target)
 {
@@ -238,6 +285,10 @@ void Entity::AIActivate(Entity *target)
         AIFollow(target);
         break;
     
+    case FLYER:
+        AIFlyWander();
+        break;
+    
     default:
         break;
     }
@@ -252,6 +303,7 @@ void Entity::update(float deltaTime, Entity *player, Map *map,
 
     resetColliderFlags();
 
+    if (mEntityType == NPC && mAIType == FLYER) mVelocity.y = mMovement.y * mSpeed;
     mVelocity.x = mMovement.x * mSpeed;
 
     mVelocity.x += mAcceleration.x * deltaTime;

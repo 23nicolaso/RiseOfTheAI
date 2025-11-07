@@ -59,6 +59,26 @@ void LevelB::initialise()
    mGameState.soldier->setFrameSpeed(4);
 
    /*
+      ----------- ENEMY AI ----------
+   */
+  
+   mEnemyEntity = new Entity(
+      {mGameState.map->getLeftBoundary()+875, mOrigin.y},
+      {70.0f, 70.0f},
+      "assets/game/wanderer.png",
+      NPC
+   );
+
+   mEnemyEntity->setAIType(WANDERER);
+   mEnemyEntity->setAIState(WALKING);
+   mEnemyEntity->setSpeed(100);
+   mEnemyEntity->setColliderDimensions({
+      mEnemyEntity->getScale().x,
+      mEnemyEntity->getScale().y
+   });
+   mEnemyEntity->setAcceleration({0.0f, ACCELERATION_OF_GRAVITY});
+
+   /*
       ----------- CAMERA -----------
    */
    mGameState.camera = { 0 };                                    // zero initialize
@@ -76,8 +96,16 @@ void LevelB::update(float deltaTime)
       deltaTime,      // delta time / fixed timestep
       nullptr,        // player
       mGameState.map, // map
-      nullptr,        // collidable entities
-      0               // col. entity count
+      mEnemyEntity,   // collidable entities
+      1               // col. entity count
+   );
+
+   mEnemyEntity -> update(
+      deltaTime,           // delta time / fixed timestep
+      mGameState.soldier,  // player
+      mGameState.map,      // map
+      nullptr,             // collidable entities
+      0                    // col. entity count
    );
 
    if (mGameState.soldier->getClearStatus() == true) mGameState.nextSceneID = 3;
@@ -90,14 +118,16 @@ void LevelB::update(float deltaTime)
 void LevelB::render()
 {
    ClearBackground(BLACK);
-   mGameState.soldier->render();
-   mGameState.map->render();
+   mGameState.soldier -> render();
+   mGameState.map     -> render();
+   mEnemyEntity       -> render();
 }
 
 void LevelB::shutdown()
 {
    delete mGameState.soldier;
    delete mGameState.map;
+   delete mEnemyEntity;
 
    UnloadMusicStream(mGameState.bgm);
    UnloadSound(mGameState.deathSound);

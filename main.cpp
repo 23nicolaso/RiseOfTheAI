@@ -104,6 +104,16 @@ void processInput()
 
         if (GetLength(gCurrentScene->getState().soldier->getMovement()) > 1.0f) 
             gCurrentScene->getState().soldier->normaliseMovement();
+        
+        if (IsKeyPressed(KEY_RIGHT_BRACKET)){
+            // A little debug tool ignore this!
+            printf("%f\n", gCurrentScene->getState().soldier->getPosition().x - 
+            gCurrentScene->getState().map->getLeftBoundary());
+        }
+        if (IsKeyPressed(KEY_LEFT_BRACKET)){
+            // A little debug tool ignore this!
+            printf("%f\n", gCurrentScene->getState().soldier->getPosition().y);
+        }
     }
     if (IsKeyPressed(KEY_Q) || WindowShouldClose()) gAppStatus = TERMINATED;
 }

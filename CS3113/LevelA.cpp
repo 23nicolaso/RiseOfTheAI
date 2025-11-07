@@ -6,7 +6,7 @@ LevelA::LevelA(Vector2 origin) : Scene { origin } {}
 LevelA::~LevelA() { shutdown(); }
 
 void LevelA::initialise()
-{
+{ 
    mGameState.nextSceneID = 0;
 
    mGameState.bgm = LoadMusicStream("assets/game/soundtrack.mp3");
@@ -59,6 +59,35 @@ void LevelA::initialise()
    mGameState.soldier->setFrameSpeed(4);
 
    /*
+      ---------- ENEMY AI ----------
+   */
+
+   std::map<Direction, std::vector<int>> enemyAtlas = {
+      {LEFT,  { 0,1 }},
+      {RIGHT,    { 2,3 }},
+   };
+
+   mEnemyEntity = new Entity(
+      {mGameState.map->getLeftBoundary()+500, mOrigin.y},
+      {70.0f, 70.0f},
+      "assets/game/roamer.png",
+      ATLAS,
+      { 1, 4},
+      enemyAtlas,
+      NPC
+   );
+
+   mEnemyEntity->setAIType(FOLLOWER);
+   mEnemyEntity->setAIState(IDLE);
+   mEnemyEntity->setSpeed(100);
+   mEnemyEntity->setColliderDimensions({
+      mEnemyEntity->getScale().x,
+      mEnemyEntity->getScale().y
+   });
+   mEnemyEntity->setAcceleration({0.0f, ACCELERATION_OF_GRAVITY});
+   mEnemyEntity->setFrameSpeed(4);
+
+   /*
       ----------- CAMERA -----------
    */
    mGameState.camera = { 0 };                                    // zero initialize
@@ -76,8 +105,16 @@ void LevelA::update(float deltaTime)
       deltaTime,      // delta time / fixed timestep
       nullptr,        // player
       mGameState.map, // map
-      nullptr,        // collidable entities
-      0               // col. entity count
+      mEnemyEntity,   // collidable entities
+      1               // col. entity count
+   );
+
+   mEnemyEntity -> update(
+      deltaTime,
+      mGameState.soldier,
+      mGameState.map,
+      nullptr,
+      0
    );
 
    if (mGameState.soldier->getClearStatus() == true) mGameState.nextSceneID = 2;
@@ -90,14 +127,16 @@ void LevelA::update(float deltaTime)
 void LevelA::render()
 {
    ClearBackground(BLACK);
-   mGameState.soldier->render();
-   mGameState.map->render();
+   mGameState.soldier -> render();
+   mEnemyEntity       -> render();
+   mGameState.map     -> render();
 }
 
 void LevelA::shutdown()
 {
    delete mGameState.soldier;
    delete mGameState.map;
+   delete mEnemyEntity;
 
    UnloadMusicStream(mGameState.bgm);
    UnloadSound(mGameState.deathSound);
